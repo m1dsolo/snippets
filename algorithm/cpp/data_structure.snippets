@@ -1,0 +1,168 @@
+# 并查集
+snippet find
+	#include <numeric>
+	int ps[N];
+	iota(ps + 1, ps + n + 1, 1);
+
+	int find(int a) {
+		return a == ps[a] ? a : ps[a] = find(ps[a]);
+	}
+
+	void merge(int a, int b) {
+		ps[find(b)] = find(a);
+	}
+
+    int merge(int a, int b) {
+        int pa = find(a), pb = find(b);
+        if (pa != pb) {
+            ps[pb] = pa;
+            return sz[pa] += sz[pb];
+        }
+        return 0;
+    }
+
+# 树状数组
+snippet lowbit
+	LL tr[N];
+
+	inline int lowbit(int a) {
+		return a & -a;
+	}
+
+	void update(int i, int a) {
+		for (; i <= n; i += lowbit(i))
+			tr[i] += a;
+	}
+
+	LL query(int i) {
+		LL res = 0;
+		for (; i; i -= lowbit(i))
+			res += tr[i];
+		return res;
+	}
+
+# 线段树
+snippet segtree
+	template <typename T>
+	class Segtree {
+		inline T op(T a, T b) {
+			return gcd(a, b);
+		}
+		inline T e() {
+			return 0;
+		}
+		struct Node {
+			int l, r;
+			T val;
+		} tr[N << 2];
+		void push_up(int u) {
+			tr[u].val = op(tr[u << 1].val, tr[u << 1 | 1].val);
+		}
+	public:
+		Segtree() {}
+		Segtree(int n, T arr[N]) {build(1, n, arr);}
+		void build(int l, int r, T arr[N], int u = 1) {
+			tr[u].l = l, tr[u].r = r;
+			if (l == r) tr[u].val = arr[l];
+			else {
+				int mid = (l + r) >> 1;
+				build(l, mid, arr, u << 1);
+				build(mid + 1, r, arr, u << 1 | 1);
+				push_up(u);
+			}
+		}
+		void update(int x, T val, int u = 1) {
+			if (tr[u].l == tr[u].r)
+				tr[u].val = val;
+			else {
+				int mid = (tr[u].l + tr[u].r) >> 1;
+				update(x, val, x <= mid ? u << 1 : u << 1 | 1);
+				push_up(u);
+			}
+		}
+		T query(int l, int r, int u = 1) {
+			if (l > r) return e();
+			if (l <= tr[u].l && r >= tr[u].r) return tr[u].val;
+			int mid = (tr[u].l + tr[u].r) >> 1;
+			T res = e();
+			if (l <= mid) res = op(res, query(l, r, u << 1));
+			if (r > mid) res = op(res, query(l, r, u << 1 | 1));
+			return res;
+		}
+	};
+
+
+# 字典树
+snippet trie
+	int trie[N][26], cnt[N], idx = 1;
+	char s[M];
+
+	void add() {
+		int p = 0;
+		for (int i = 0; s[i]; i++) {
+			if (!trie[p][s[i] - 'a'])
+				trie[p][s[i] - 'a'] = idx++;
+			p = trie[p][s[i] - 'a'];
+		}
+		cnt[p]++;
+	}
+
+	int query() {
+		int p = 0;
+		for (int i = 0; s[i]; i++) {
+			if (!trie[p][s[i] - 'a'])
+				return 0;
+			p = trie[p][s[i] - 'a'];
+		}
+		return cnt[p];
+	}
+
+# 块状数组
+snippet block
+	#include <cmath>
+	LL arr[N], sum[N];
+	int bl[N], br[N], bel[N];
+
+	inline void update_block(int l, int r) {
+	}
+
+	void update(int l, int r) {
+		if (bel[l] == bel[r])
+			update_block(l, r);
+		else {
+			update_block(l, br[bel[l]]), update_block(bl[bel[r]], r);
+			for (int i = bel[l] + 1; i < bel[r]; i++)
+				update_block(bl[i], br[i]);
+		}
+	}
+
+	inline LL query_block(int l, int r) {
+	}
+
+	LL query(int l, int r) {
+		if (bel[l] == bel[r]) return query_block(l, r);
+		LL res = query_block(l, br[bel[l]]) + query_block(bl[bel[r]], r);
+		for (int i = bel[l] + 1; i < bel[r]; i++)
+			res += query_block(bl[i], br[i]);
+		return res;
+	}
+
+	int sq = sqrt(n);
+	for (int i = 1; i <= sq; i++) {
+		bl[i] = n / sq * (i - 1) + 1;
+		br[i] = n / sq * i;
+	}
+	br[sq] = n;
+	for (int i = 1; i <= sq; i++)
+		for (int j = bl[i]; j <= br[i]; j++)
+			bel[j] = i, sum[i] += arr[j];
+
+# 堆(完全二叉树，只有最后一层节点不满，但是从左到右依次排布)
+# 每个点都满足小于等于左右儿子
+# 插入一个数(stl支持)
+# 求集合最小值(stl支持)
+# 删除最小值(stl支持)
+# 删除任意一个数(stl不支持)
+# 修改任意一个数(stl不支持)
+snippet heap
+

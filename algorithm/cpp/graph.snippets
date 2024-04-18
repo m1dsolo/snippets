@@ -1,0 +1,379 @@
+snippet add "add edge with no weight"
+	int h[N], vs[M], ne[M], idx = 1;
+
+	void add(int u, int v) {
+		vs[idx] = v, ne[idx] = h[u], h[u] = idx++;
+	}
+
+		for (int i = 0; i < m; i++) {
+			int u, v;
+			scanf("%d%d", &u, &v);
+			add(u, v), add(v, u);
+		}
+
+snippet addw "add edge with weight"
+	int h[N], vs[M], ws[M], ne[M], idx = 1;
+
+	void add(int u, int v, int w) {
+		vs[idx] = v, ::ws[idx] = w, ne[idx] = h[u], h[u] = idx++;
+	}
+
+		for (int i = 0; i < m; i++) {
+			int u, v, w;
+			scanf("%d%d%d", &u, &v, &w);
+			add(u, v, w), add(v, u, w);
+		}
+
+# O(mlogn)
+snippet dijkstra
+	#include <queue>
+	const int INF = 0x3f3f3f3f;
+	int h[N], vs[M], ws[M], ne[M], idx = 1, dis[N];
+	bool vis[N];
+
+	void add(int u, int v, int w) {
+		vs[idx] = v, ::ws[idx] = w, ne[idx] = h[u], h[u] = idx++;
+	}
+
+	void dijkstra(int s) {
+		memset(dis, 0x3f, sizeof dis);
+		memset(vis, false, sizeof vis);
+		dis[s] = 0;
+		priority_queue<PII, vector<PII>, greater<PII>> q;
+		q.push({0, s});
+		while (q.size()) {
+			int u = q.top().second; q.pop();
+			if (vis[u]) continue;
+			vis[u] = true;
+			for (int i = h[u]; i; i = ne[i]) {
+				int v = vs[i], w = ::ws[i];
+				if (dis[v] > dis[u] + w)
+					q.push({dis[v] = dis[u] + w, v});
+			}
+		}
+	}
+
+snippet spfa
+	#include <queue>
+	int h[N], vs[M], ws[M], ne[M], idx = 1, dis[N];
+	bool vis[N];
+
+	void add(int u, int v, int w) {
+		vs[idx] = v, ::ws[idx] = w, ne[idx] = h[u], h[u] = idx++;
+	}
+
+	void spfa(int s) {
+		memset(dis + 1, 0x3f, sizeof(int) * n);
+		dis[s] = 0;
+		memset(vis + 1, false, n);
+		queue<int> q({s});
+		vis[s] = true;
+		while (q.size()) {
+			int u = q.front(); q.pop();
+			vis[u] = false;
+			for (int i = h[u]; i; i = ne[i]) {
+				int v = vs[i], w = ::ws[i];
+				if (dis[u] + w < dis[v]) {
+					dis[v] = dis[u] + w;
+					if (!vis[v])
+						q.emplace(v), vis[v] = true;
+				}
+			}
+		}
+	}
+
+snippet floyd
+	LL g[N][N];
+
+	void floyd() {
+		for (int k = 1; k <= n; k++)
+			for (int i = 1; i <= n; i++)
+				for (int j = 1; j <= n; j++)
+					g[i][j] = min(g[i][j], g[i][k] + g[k][j]);
+	}
+
+		memset(g, 0x3f, sizeof g);
+		for (int i = 0; i < m; i++) {
+			int u, v, w;
+			scanf("%d%d%d", &u, &v, &w);
+			g[u][v] = min(g[u][v], (LL)w);
+		}
+		for (int i = 1; i <= n; i++)
+			g[i][i] = 0;
+
+snippet bfs
+	int q[N], dis[N];
+	bool vis[N];
+
+	void bfs(int s) {
+		memset(dis, 0, sizeof dis);
+		memset(vis, false, sizeof vis);
+		int tt = 0, hh = 0;
+		q[tt++] = s, vis[s] = true;
+		int len = 0;
+		while (int sz = tt - hh) {
+			while (sz--) {
+				int u = q[hh++];
+				dis[u] = len;
+				for (int i = h[u]; i; i = ne[i]) {
+					int v = vs[i];
+					if (!vis[v])
+						q[tt++] = v, vis[v] = true;
+				}
+			}
+			len++;
+		}
+	}
+
+snippet hungarian
+	int match[N];
+	bool vis[N];
+	bool find(int u) {
+		for (int i = h[u]; i; i = ne[i]) {
+			int v = vs[i];
+			if (vis[v]) continue;
+			vis[v] = true;
+			if (!match[v] || find(match[v])) {
+				match[v] = u;
+				return true;
+			}
+		}
+		return false;
+	}
+	int res = 0;
+	for (int i = 1; i <= n1; i++) {
+		memset(vis + 1, false, n2);
+		res += find(i);
+	}
+
+snippet tarjan
+	struct E {
+		int u, v;
+	} es[M];
+
+	int h[N], vs[M], ne[M], idx = 1;
+	int dfn[N], low[N], stk[N], top, stamp, id[N], gid;
+	bool instk[N];
+
+	void add(int u, int v) {
+		vs[idx] = v, ne[idx] = h[u], h[u] = idx++;
+	}
+
+	void tarjan(int u) {
+		dfn[u] = low[u] = ++stamp;
+		stk[top++] = u;
+		instk[u] = true;
+		for (int i = h[u]; i; i = ne[i]) {
+			int v = vs[i];
+			if (!dfn[v]) {
+				tarjan(v);
+				low[u] = min(low[u], low[v]);
+			}
+			else if (instk[v])
+				low[u] = min(low[u], dfn[v]);
+		}
+		if (low[u] == dfn[u]) {
+			while (true) {
+				int v = stk[--top];
+				instk[v] = false;
+				id[v] = gid;
+				if (v == u) break;
+			}
+			gid++;
+		}
+	}
+
+		for (int i = 0; i < m; i++) {
+			scanf("%d%d", &es[i].u, &es[i].v);
+			add(es[i].u, es[i].v);
+		}
+
+		for (int i = 1; i <= n; i++)
+			if (!dfn[i]) tarjan(i);
+
+		idx = 1;
+		memset(h, 0, sizeof h);
+		for (int i = 0; i < m; i++)
+			if (id[es[i].u] != id[es[i].v])
+				add(id[es[i].u], id[es[i].v]);
+
+# 染色法判断二分图
+# 一个图是二分图当且仅当图中不含奇数环
+snippet color
+	int h[N], vs[M], ne[M], idx = 1, color[N];
+
+	void add(int u, int v) {
+		vs[idx] = v, ne[idx] = h[u], h[u] = idx++;
+	}
+
+	bool dfs(int u, int c) {
+		color[u] = c;
+		for (int i = h[u]; i; i = ne[i]) {
+			int v = vs[i];
+			if (!color[v]) {
+				if (!dfs(v, 3 - c)) return false;
+			}
+			else if (color[v] == c) return false;
+		}
+		return true;
+	}
+
+	bool res = true;
+	for (int i = 1; i <= n; i++) 
+		if (!color[i] && !dfs(i, 1)) {
+			res = false;
+			break;
+		}
+
+snippet lca
+	// log2(2e5 + 10) ~= 17.6
+	int h[N], vs[M], ne[M], idx = 1, lg[N], ps[N][18], dep[N];
+
+	void add(int u, int v) {
+		vs[idx] = v, ne[idx] = h[u], h[u] = idx++;
+	}
+
+	void dfs(int u, int p) {
+		ps[u][0] = p, dep[u] = dep[p] + 1;
+		for (int i = 1; i < lg[dep[u]]; i++)
+			ps[u][i] = ps[ps[u][i - 1]][i - 1];
+		for (int i = h[u]; i; i = ne[i])
+			if (vs[i] != p) dfs(vs[i], u);
+	}
+
+	int lca(int a, int b) {
+		if (dep[a] < dep[b]) swap(a, b);
+		while (dep[a] > dep[b]) a = ps[a][lg[dep[a] - dep[b]] - 1];
+		if (a == b) return a;
+		for (int i = lg[dep[a]] - 1; ~i; i--)
+			if (ps[a][i] != ps[b][i])
+				a = ps[a][i], b = ps[b][i];
+		return ps[a][0];
+	}
+
+	int n, q;
+	scanf("%d%d", &n, &q);
+	for (int i = 1; i <= n; i++)
+		lg[i] = lg[i - 1] + ((1 << lg[i - 1]) == i);
+	for (int i = 0; i < n - 1; i++) {
+		int u, v;
+		scanf("%d%d", &u, &v);
+		add(u, v), add(v, u);
+	}
+	dfs(1, 0);
+
+snippet prim "O(n^2)"
+	int n, m, dis[N], g[N][N];
+	bool vis[N];
+
+	int prim() {
+		memset(dis, 0x3f, sizeof dis);
+		memset(vis, false, sizeof vis);
+		dis[1] = 0;
+		int res = 0;
+		for (int i = 0; i < n; i++) {
+			int u = -1;
+			for (int v = 1; v <= n; v++) {
+				if (!vis[v] && (u == -1 || dis[u] > dis[v]))
+					u = v;
+			}
+			if (dis[u] == INF)
+				return INF;
+			vis[u] = true;
+			res += dis[u];
+
+			for (int v = 1; v <= n; v++)
+				dis[v] = min(dis[v], g[u][v]);
+		}
+
+		return res;
+	}
+
+
+snippet kruskal "O(mlogm)"
+	int n, m, ps[N];
+
+	struct Edge {
+		int u, v, w;
+		bool operator<(const Edge &e) const {
+			return w < e.w;
+		}
+	} es[M];
+
+	int find(int a) {
+		return a == ps[a] ? a : ps[a] = find(ps[a]);
+	}
+
+	void merge(int a, int b) {
+		ps[find(b)] = find(a);
+	}
+
+	int kruskal() {
+		iota(ps + 1, ps + n + 1, 1);
+		int cnt = n - 1, res = 0;
+		for (int i = 0; i < m; i++) {
+			int u = es[i].u, v = es[i].v, w = es[i].w;
+			if (find(u) != find(v)) {
+				merge(u, v);
+				res += w;
+				if (!--cnt)
+					break;
+			}
+		}
+
+		return cnt ? -1 : res;
+	}
+
+	int n, m, k;
+	int dis[N], bak[N];
+
+	struct Edge {
+		int u, v, w;
+	} es[M];
+
+snippet bellman_ford "O(nm)"
+	int n, m;
+	int dis[N], bak[N];
+
+	struct Edge {
+		int u, v, w;
+	} es[M];
+
+	int bellman_ford(int k) {
+		memset(dis, 0x3f, sizeof dis);
+		dis[1] = 0;
+		for (int i = 0; i < k; i++) {
+			memcpy(bak, dis, sizeof dis);
+			for (int j = 0; j < m; j++) {
+				int u = es[j].u, v = es[j].v, w = es[j].w;
+				dis[v] = min(dis[v], bak[u] + w);
+			}
+		}
+
+		return dis[n];
+	}
+
+snippet topsort
+    int h[N], vs[N], ne[N], idx = 1, ind[N];
+    int q[N], hh = 0, tt = 0;
+
+    void add(int u, int v) {
+        vs[idx] = v, ne[idx] = h[u], h[u] = idx++, ind[v]++;
+    }
+
+    bool topsort(int n) {
+        for (int u = 0; u < n; u++)
+            if (!ind[u])
+                q[tt++] = u;
+
+        while (tt > hh) {
+            int u = q[hh++];
+            for (int i = h[u]; i; i = ne[i]) {
+                int v = vs[i];
+                if (!--ind[v])
+                    q[tt++] = v;
+            }
+        }
+        return tt == n;
+    }
+

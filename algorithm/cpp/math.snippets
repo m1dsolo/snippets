@@ -1,0 +1,124 @@
+snippet sieve
+	int primes[N], cnt;
+	bool not_prime[N];
+
+	void sieve(int n) {
+		for (int i = 2; i <= n; i++) {
+			if (!not_prime[i])
+				primes[cnt++] = i;
+			for (int j = 0; primes[j] <= n / i; j++) {
+				not_prime[i * primes[j]] = true;
+				if (!(i % primes[j])) break;
+			}
+		}
+	}
+
+snippet gcd
+	LL gcd(LL a, LL b) {
+		return b ? gcd(b, a % b) : a;
+	}
+
+snippet exgcd
+	LL exgcd(LL a, LL b, LL &x, LL &y) {
+		if (!b) {
+			x = 1, y = 0;
+			return a;
+		}
+		LL xx, yy, g = exgcd(b, a % b, xx, yy);
+		x = yy, y = xx - a / b * yy;
+		return g;
+	}
+
+	// 特解
+	LL x0 = x * c / g, y0 = y * c / g;
+	// 通解(x1 = x0 + k * b / g, y1 = y0 - k * a / g)
+
+	LL bb = abs(b / g);
+	// x取最小自然数
+	LL x1 = (x0 % bb + bb) % bb, y1 = (c - a * x1) / b;
+
+	// x,y都取自然数
+	a /= g, b /= g, c /= g, x *= c, y *= c;
+	while (x < 0)
+		x += b, y -= a;
+	while (y < 0)
+		x -= b, y += a;
+	if (x < 0)
+		cout << -1 << endl;
+	else
+		cout << x << " " << y << endl;
+
+snippet qpow
+	LL qpow(LL a, LL n) {
+		if (n < 0) return 0;
+		LL res = 1;
+		while (n) {
+			if (n & 1) (res *= a) %= MOD;
+			(a *= a) %= MOD;
+			n >>= 1;
+		}
+		return res;
+	}
+
+snippet C "combination"
+	LL f[N] = {1}, inv[N];
+	for (int i = 1; i <= n; i++)
+		f[i] = (f[i - 1] * i) % MOD;
+	inv[n] = qpow(f[n], MOD - 2);
+	for (int i = n - 1; ~i; i--)
+		inv[i] = (inv[i + 1] * (i + 1)) % MOD;
+
+	LL qpow(LL a, LL n) {
+		if (n < 0) return 0;
+		LL res = 1;
+		while (n) {
+			if (n & 1) (res *= a) %= MOD;
+			(a *= a) %= MOD;
+			n >>= 1;
+		}
+		return res;
+	}
+
+	LL C(int n, int m) {
+		if (n < m) return 0;
+		return f[n] * inv[m] % MOD * inv[n - m] % MOD;
+	}
+
+	LL C(int n, int m) {
+		if (n < m) return 0;
+		if (m > n >> 1)
+			m = n - m;
+		LL res = 1;
+		for (int i = n - m + 1, j = 1; i <= n; i++, j++)
+			res = res * i / j;
+		return res;
+	}
+
+snippet is_prime
+	bool is_prime(int val) {
+		if (val < 2) return false;
+		for (int i = 2; i <= val / i; i++)
+			if (!(val % i))
+				return false;
+		return true;
+	}
+
+snippet inv
+
+	LL inv(int a) {
+		return a == 1 ? 1 : (LL)(P - P / a) * inv(P % a) % P;
+	}
+
+snippet get_factors
+	vector<int> get_factors(int n) {
+		vector<int> res;
+		for (int i = 1; i <= sqrt(n); i++) {
+			if (!(n % i)) {
+				res.emplace_back(i);
+				if (n / i != i)
+					res.emplace_back(n / i);
+			}
+		}
+		return res;
+	}
+

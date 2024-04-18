@@ -1,0 +1,59 @@
+snippet hash_pair
+	struct hash_pair {
+		size_t operator()(const PII &p) const {
+			return (LL)p.first << 32 | p.second;
+		}
+	};
+
+snippet ijs
+	const int ijs[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+
+snippet hash_string
+	using ULL = unsigned long long;
+	const int P = 131;
+
+	ULL p[N] = {1}, hs[N];
+
+	ULL f(int l, int r) {
+		return hs[r] - hs[l - 1] * p[r - l + 1];
+	}
+
+	for (int i = 1; i <= n; i++) {
+		p[i] = p[i - 1] * P;
+		hs[i] = hs[i - 1] * P + s[i];
+	}
+
+snippet kmp
+	void get_nxt() {
+		for (int i = 2, j = 0; i <= m; i++) {
+			while (j && p[j + 1] != p[i]) j = nxt[j];
+			if (p[j + 1] == p[i]) j++;
+			nxt[i] = j;
+		}
+	}
+
+	void kmp() {
+		get_nxt();
+		for (int i = 1, j = 0; i <= n; i++) {
+			while (j && p[j + 1] != s[i]) j = nxt[j];
+			if (p[j + 1] == s[i]) j++;
+			if (j == m) {
+				printf("%d ", i - m);
+				j = nxt[j];
+			}
+		}
+		puts("");
+	}
+	
+snippet split
+	vector<string> split(const string &s, char c) {
+		vector<string> res;
+		stringstream ss(s);
+		string tmp;
+		while (getline(ss, tmp, c))
+			res.emplace_back(tmp);
+		if (s.size() && s.back() == c)
+			res.emplace_back("");
+		return res;
+	}
+
